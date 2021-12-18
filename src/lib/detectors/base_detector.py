@@ -2,11 +2,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import torch
 import cv2
 import numpy as np
 from progress.bar import Bar
 import time
-import torch
 
 from models.model import create_model, load_model
 from utils.image import get_affine_transform

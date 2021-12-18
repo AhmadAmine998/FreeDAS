@@ -6,9 +6,11 @@ from numpy.core.numeric import indices
 
 import _init_paths
 
-
 from opts import opts
 from detectors.detector_factory import detector_factory
+
+# import speed estimation model
+from lib.SpeedEstimator import Realtimespeed, get_annotated_frame, neural_factory
 
 import os
 import cv2
@@ -34,9 +36,42 @@ color = np.random.randint(0, 255, (100, 3))
 # Video framerate
 FPS = 20
 
-# Detections per second
-DPS = 1/20
+# Seconds per Detection
+SPD = 1
 
+def im_pretty_show(prediction_annotation, img1):
+  road = prediction_annotation
+  height, width, ch = img1.shape
+  new_width, new_height = width + width/20, height + height/8
+
+  # Crate a new canvas with new width and height.
+  canvas_orig = np.ones((int(new_height), int(new_width), ch), dtype=np.uint8) * 125
+
+  # New replace the center of canvas with original image
+  padding_top, padding_left = 60, 10
+  if padding_top + height <= new_height and padding_left + width <= new_width:
+      canvas_orig[padding_top:padding_top + height, padding_left:padding_left + width] = img1
+  else:
+      print("The Given padding exceeds the limits.")
+
+  # Crate a new canvas with new width and height.
+  canvas_road = np.ones((int(new_height), int(new_width), ch), dtype=np.uint8) * 125
+
+  # New replace the center of canvas with original image
+  padding_top, padding_left = 60, 10
+  if padding_top + height <= new_height and padding_left + width <= new_width:
+      canvas_road[padding_top:padding_top + height, padding_left:padding_left + width] = road
+  else:
+      print("The Given padding exceeds the limits.")
+
+  text1 = "Original"
+  text2 = "Prediction"
+  texted_image1 = cv2.putText(canvas_orig.copy(), text1, (int(0.25*width), 30), cv2.FONT_HERSHEY_COMPLEX, 1, [255, 0, 0])
+  texted_image2 = cv2.putText(canvas_road.copy(), text2, (int(0.25*width), 30), cv2.FONT_HERSHEY_COMPLEX, 1, [255, 0, 0])
+
+  final = cv2.hconcat((texted_image1, texted_image2))
+  cv2.imshow("result", final)
+  
 image_ext = ['jpg', 'jpeg', 'png', 'webp']
 video_ext = ['mp4', 'mov', 'avi', 'mkv']
 time_stats = ['tot', 'load', 'pre', 'net', 'dec', 'post', 'merge']
@@ -46,19 +81,34 @@ def demo(opt):
   opt.debug = max(opt.debug, 1)
   Detector = detector_factory[opt.task]
   detector = Detector(opt)
-  frame_idx = 0
+
+  # # Initialize Speed Estimation Model
+  # speed_model = neural_factory()
+  # speed_model.load_weights('models/speed_model.h5')
+
+  # # Speed Estimation Parameters
+  # frame_idx = 1
+  # y_true = [0,0]
 
   if opt.demo == 'webcam' or \
     opt.demo[opt.demo.rfind('.') + 1:].lower() in video_ext:
     cam = cv2.VideoCapture(0 if opt.demo == 'webcam' else opt.demo)
     detector.pause = False
-    ret, img_old = cam.read()
+    # ret, img_old = cam.read()
+    frame_idx = 0
     while True:
-      if frame_idx % (DPS * FPS) == 0:
+      if frame_idx % (SPD * FPS) == 0:
         ret, img_new = cam.read()
         if not ret:
             print('No frames grabbed!')
             break
+
+        # img_old_gray   = cv2.cvtColor(img_new, cv2.COLOR_BGR2GRAY)
+        detection_gray = cv2.cvtColor(img_new, cv2.COLOR_BGR2GRAY)
+        
+        # prediction_annotation, y_true = get_annotated_frame(detection_gray, img_old_gray, frame_idx, speed_model, y_true)
+      
+        # im_pretty_show(prediction_annotation, img_new)
 
         cv2.imshow('input', img_new)
         result, debugger = detector.run(img_new)
@@ -69,8 +119,7 @@ def demo(opt):
         if cv2.waitKey(1) == 27:
             return  # esc to quit
 
-        detection_gray = cv2.cvtColor(img_new, cv2.COLOR_BGR2GRAY)
-      elif (frame_idx - 1) % (DPS * FPS) == 0:
+      elif (frame_idx - 1) % (SPD * FPS) == 0:
         ret, img_new = cam.read()
         if not ret:
             print('No frames grabbed!')
