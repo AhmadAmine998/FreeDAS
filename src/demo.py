@@ -12,6 +12,9 @@ from detectors.detector_factory import detector_factory
 # import speed estimation model
 from lib.SpeedEstimator import Realtimespeed, get_annotated_frame, neural_factory
 
+# import lane detection module
+from lib.EdgeDetection import LaneDetection
+
 import os
 import cv2
 import numpy as np
@@ -79,8 +82,8 @@ time_stats = ['tot', 'load', 'pre', 'net', 'dec', 'post', 'merge']
 def demo(opt):
   os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
   opt.debug = max(opt.debug, 1)
-  Detector = detector_factory[opt.task]
-  detector = Detector(opt)
+  DetectorClass = detector_factory[opt.task]
+  objectDetector = DetectorClass(opt)
 
   # # Initialize Speed Estimation Model
   # speed_model = neural_factory()
@@ -90,10 +93,13 @@ def demo(opt):
   # frame_idx = 1
   # y_true = [0,0]
 
+  # Initialize Lane Detector Class
+  laneDetector = LaneDetection()
+  
   if opt.demo == 'webcam' or \
     opt.demo[opt.demo.rfind('.') + 1:].lower() in video_ext:
     cam = cv2.VideoCapture(0 if opt.demo == 'webcam' else opt.demo)
-    detector.pause = False
+    objectDetector.pause = False
     # ret, img_old = cam.read()
     frame_idx = 0
     while True:
@@ -111,7 +117,7 @@ def demo(opt):
         # im_pretty_show(prediction_annotation, img_new)
 
         cv2.imshow('input', img_new)
-        result, debugger = detector.run(img_new)
+        result, debugger = objectDetector.run(img_new)
         time_str = ''
         for stat in time_stats:
           time_str = time_str + '{} {:.3f}s |'.format(stat, result[stat])
@@ -128,7 +134,7 @@ def demo(opt):
         cv2.imshow('input', img_new)
 
         mask = np.zeros_like(img_new)
-        mask, centers, indices = detector.create_detections_mask(debugger, mask, result['results'])
+        mask, centers, indices = objectDetector.create_detections_mask(debugger, mask, result['results'])
         
         current_gray = cv2.cvtColor(img_new, cv2.COLOR_BGR2GRAY)
   
@@ -151,7 +157,7 @@ def demo(opt):
             tracked = cv2.circle(tracked, (int(a), int(b)), 5, color[i].tolist(), -1)
 
         tracked = cv2.add(tracked, tracker)
-        detector.custom_show_results(debugger, tracked, result['results'])
+        objectDetector.custom_show_results(debugger, tracked, result['results'])
 
         # cv2.imshow('ctdet', tracked)
         if cv2.waitKey(1) == 27:
@@ -186,8 +192,8 @@ def demo(opt):
         tracked = cv2.add(tracked, tracker)
 
         # This is prone to corrupting boxes, it is not perfect
-        # detector.update_boxes(good_new, result['results'], indices)
-        # detector.custom_show_results(debugger, tracked, result['results'])
+        # objectDetector.update_boxes(good_new, result['results'], indices)
+        # objectDetector.custom_show_results(debugger, tracked, result['results'])
 
         # Show tracked centers only
         cv2.imshow('ctdet', tracked)
@@ -213,7 +219,7 @@ def demo(opt):
       image_names = [opt.demo]
     
     for (image_name) in image_names:
-      result = detector.run(image_name)
+      result = objectDetector.run(image_name)
       time_str = ''
       for stat in time_stats:
         time_str = time_str + '{} {:.3f}s |'.format(stat, result[stat])
