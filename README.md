@@ -70,3 +70,7 @@ python src/demo.py ctdet --demo Data/train.mp4 --load_model models/ctdet_coco_re
 ```
 For more information on why these commands are used, please refer to CenterNet's officail documentation. It is crucial that you download the models referenced in the previous section and saving them in FreeDAS\models prior to runninng this code, else it will fail.
 #### Speed Estimation
+Speed Estimation is currently as stand-alone feature as we were unable to load both CenterNet and our trained model together without running out of memory. This is clear indication that the model needs further optimization before integration. However, you can still run the speed estimation model by simply running the following command:
+```
+python src\lib\SpeedEstimator.py
+```
