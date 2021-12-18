@@ -81,8 +81,7 @@ class LaneDetection:
         pass
 
     def video_capture(self):
-        self.cap = cv2.VideoCapture("D:/Adithya/GRE/Applications/University of Pennsylvania/Master's Course/\
-1st Semester/Computer Vision and Computational Photography/Project/train.mp4")
+        self.cap = cv2.VideoCapture("Data/train.mp4")
 
     def canny_edge_detection(self, frame):
 
