@@ -1,4 +1,5 @@
 # Open-Source Vision-Based Driver Assist for Dashcams
+![Alt Text](https://github.com/AhmadAmine998/FreeDAS/blob/master/readme/obsandlane.gif)
 ## Features
 
 - Object Detection and Tracking
@@ -74,3 +75,6 @@ Speed Estimation is currently as stand-alone feature as we were unable to load b
 ```
 python src\lib\SpeedEstimator.py
 ```
+You should get something similar to this:
+
+![Alt Text](https://github.com/AhmadAmine998/FreeDAS/blob/master/readme/Speedestimatorvideo.gif)
