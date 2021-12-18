@@ -15,7 +15,7 @@ class BirdEyeView:
         self.truth_value = truth_value
 
     def display(self):
-        print("IMG", self.img)
+        pass
 
     def unwarp(self):
 
@@ -36,7 +36,7 @@ class BirdEyeView:
 
         # use cv2.warpPerspective() to warp your image to a top-down view
         warped1 = cv2.warpPerspective(self.img, M, (w, h), flags=cv2.INTER_LINEAR)
-        warped = cv2.rotate(warped1, cv2.cv2.ROTATE_90_CLOCKWISE)
+        warped = cv2.rotate(warped1, cv2.ROTATE_90_CLOCKWISE)
 
         if self.truth_value:
             f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))

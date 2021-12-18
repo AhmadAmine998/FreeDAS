@@ -56,10 +56,6 @@ class PolynomialLane:
             win_xleft_high = leftx_current + margin
             win_xright_low = rightx_current - margin - 10
             win_xright_high = rightx_current + margin - 10
-            print("out_img", out_img)
-            print("win_xleft_low", win_xleft_low)
-            print("win_xleft_high", win_xleft_high)
-            print("win_y_high", win_y_high)
 
             cv2.rectangle(out_img, (win_xleft_low, win_y_low), (win_xleft_high, win_y_high), (0, 255, 0), 2)
             cv2.rectangle(out_img, (win_xright_low, win_y_low), (win_xright_high, win_y_high), (0, 255, 0), 2)
@@ -88,19 +84,15 @@ class PolynomialLane:
         if not len(leftx) is 0:
             left_fit = np.polyfit(lefty, leftx, 2)
             lc, res, _, _, _ = np.polyfit(lefty, leftx, 2, full=True)
-            print('Left lane coefficients : ')
-            print(lc)
             lfit = np.poly1d(lc)
 
         if not len(rightx) is 0:
             right_fit = np.polyfit(righty, rightx, 2)
             rc, res, _, _, _ = np.polyfit(righty, rightx, 2, full=True)
-            print('Right lane coefficients : ')
-            print(rc)
             rfit = np.poly1d(rc)
 
         out_img = cv2.resize(out_img, (640, 360))
-        cv2.imshow('out_img', out_img)
+        cv2.imshow('Sliding Window', out_img)
 
         if not len(leftx) is 0:
             left_fit = left_line.add_fit(left_fit)
@@ -146,7 +138,6 @@ class PolynomialLane:
             pts = np.array([[383, 194], [256, 192], [0,350], [640, 350]])
             # pts = np.array([[418, 275], [209, 275], [0, 435], [640, 411]])
 
-            print("pts", pts)
             cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
 
             newwarp = cv2.warpPerspective(color_warp, self.m_inv, (self.frame.shape[1], self.frame.shape[0]))
@@ -157,21 +148,9 @@ class PolynomialLane:
             label_str_rad = 'Radius of curvature: %.1f cm' % avg_curve
             result = cv2.putText(result, label_str_rad, (30, 40), 0, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
-            print('Radius of Curvature : ')
-            print(avg_curve)
-            print('Vehicle Offset : ')
-            print(vehicle_offset)
             label_str_offset = 'Vehicle offset from lane center: %.1f %%' % vehicle_offset
             result = cv2.putText(result, label_str_offset, (30, 70), 0, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
             result = cv2.resize(result, (640, 360))
-            cv2.imshow('result', result)
-            # plt.imshow(result)
-            # plt.show()
 
-            return newwarp, label_str_rad, label_str_offset
-
-        # if cv2.waitKey(0) & 0xFF == ord('q'):
-        #     return
-
-
+            return label_str_rad, label_str_offset

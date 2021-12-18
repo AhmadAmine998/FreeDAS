@@ -7,7 +7,6 @@ from lane_detection import PolynomialLane
 
 
 def make_coordinates(image, line_parameters):
-    print("Line", line_parameters)
     slope, intercept = line_parameters
     y1 = image.shape[0]
     y2 = int(y1 * (3/5))
@@ -38,8 +37,6 @@ def average_slope_intercept(image, lines):
         right_fit_average = np.average(right_fit, axis = 0)
         right_line = make_coordinates(image, right_fit_average)
 
-    # print("LEFT LINE", left_line)
-    # print("Right line", right_line)
     return np.array([left_line, right_line])
 
 
@@ -54,10 +51,7 @@ def display_lines(image, lines):
     line_image = np.zeros_like(image)
     if lines is not None:
         for line in lines:
-            print("\n")
-            print("Line------", line)
             x1, y1, x2, y2 = line.reshape(4)
-            print(x1, y1, x2, y2)
             try:
                 cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 10)
             except:
@@ -85,9 +79,6 @@ class LaneDetection:
 
     def canny_edge_detection(self, frame):
 
-        # while self.cap.isOpened():
-        #     _, frame = self.cap.read()
-
         gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
         canny_image = cv2.Canny(blur, 50, 150)
@@ -103,8 +94,10 @@ class LaneDetection:
 
         # Calling lane_detection for sliding window
         poly_lane_detect = PolynomialLane(frame, perspective_image)
-        nwarp, radius, offset = None, None, None
-        nwarp, radius, offset = poly_lane_detect.polyLine(gray_perspective)
+        try:
+            radius, offset = poly_lane_detect.polyLine(gray_perspective)
+        except:
+            radius, offset = None, None
 
         # cropped_perspective = region_of_interest(canny_perspective, np.array([
         #     [(100, 352), (560, 357), (375, 250), (275, 241)]
@@ -115,10 +108,10 @@ class LaneDetection:
         ]))
 
         lines = cv2.HoughLinesP(cropped_image, 2, np.pi / 180, 20, np.array([]), minLineLength=10, maxLineGap=1000)
-        print("LINES", lines)
+
         perspective_lines = cv2.HoughLinesP(cropped_perspective, 2, np.pi / 180, 20, np.array([]), minLineLength=10,
                                             maxLineGap=1000)
-        # print("FRAME", frame)
+
         if lines is not None:
             averaged_lines = average_slope_intercept(frame, lines)
             line_image = display_lines(frame, averaged_lines)
@@ -126,23 +119,18 @@ class LaneDetection:
             if perspective_lines is not None:
                 averaged_lines = average_slope_intercept(perspective_image[0], perspective_lines)
                 perspective_line_image = display_lines(perspective_image[0], averaged_lines)
-
-            # combo_image = cv2.add(lane_image, line_image)
+            else:
+                perspective_line_image = None
 
             combo_image = cv2.addWeighted(frame, 0.8, line_image, 1, 0)
-            cv2.imshow("result", combo_image)
-            # plt.imshow(combo_image)
-            # plt.show()
+            
             if perspective_lines is not None:
                 combo_image = cv2.addWeighted(perspective_image[0], 0.8, perspective_line_image, 1, 0)
-                # cv2.imshow("Perspective", combo_image)
+                cv2.imshow("Sliding Window", combo_image)
 
-            # cv2.waitKey(0)
-        return line_image, perspective_line_image, nwarp, radius, offset
-    # self.cap.release()
-    # cv2.destroyAllWindows()
+        else:
+            line_image = None
+            perspective_line_image = None
 
 
-# obj = LaneDetection(cv2.VideoCapture("D:/Adithya/GRE/Applications/University of Pennsylvania/Master's Course/\
-# 1st Semester/Computer Vision and Computational Photography/Project/train.mp4"))
-# obj.canny_edge_detection()
+        return line_image, radius, offset

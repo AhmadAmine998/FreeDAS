@@ -116,7 +116,15 @@ def demo(opt):
       
         # im_pretty_show(prediction_annotation, img_new)
 
+        line_image, radius, offset = laneDetector.canny_edge_detection(img_new)
+        try:
+          img_new = cv2.addWeighted(img_new, 0.8, line_image, 1, 0)
+          img_new = cv2.putText(img_new, radius, (30, 480-40), 0, 1, (0, 255, 0), 1, cv2.LINE_AA)
+          img_new = cv2.putText(img_new, offset, (30, 480-70), 0, 1, (0, 255, 0), 1, cv2.LINE_AA)
+        except:
+          pass
         cv2.imshow('input', img_new)
+        
         result, debugger = objectDetector.run(img_new)
         time_str = ''
         for stat in time_stats:
@@ -157,6 +165,15 @@ def demo(opt):
             tracked = cv2.circle(tracked, (int(a), int(b)), 5, color[i].tolist(), -1)
 
         tracked = cv2.add(tracked, tracker)
+
+        line_image, radius, offset = laneDetector.canny_edge_detection(img_new)
+        try:
+          # tracked = cv2.addWeighted(tracked, 0.8, line_image, 1, 0)
+          tracked = cv2.putText(tracked, radius, (0, 480-40), 0, 1, (0, 255, 0), 1, cv2.LINE_AA)
+          tracked = cv2.putText(tracked, offset, (0, 480-70), 0, 1, (0, 255, 0), 1, cv2.LINE_AA)
+        except:
+          pass
+
         objectDetector.custom_show_results(debugger, tracked, result['results'])
 
         # cv2.imshow('ctdet', tracked)
@@ -190,6 +207,14 @@ def demo(opt):
             tracked = cv2.circle(tracked, (int(a), int(b)), 5, color[i].tolist(), -1)
 
         tracked = cv2.add(tracked, tracker)
+
+        line_image, radius, offset = laneDetector.canny_edge_detection(img_new)
+        try:
+          tracked = cv2.addWeighted(tracked, 0.8, line_image, 1, 0)
+          tracked = cv2.putText(tracked, radius, (30, 480-40), 0, 1, (0, 255, 0), 1, cv2.LINE_AA)
+          tracked = cv2.putText(tracked, offset, (30, 480-70), 0, 1, (0, 255, 0), 1, cv2.LINE_AA)
+        except:
+          pass
 
         # This is prone to corrupting boxes, it is not perfect
         # objectDetector.update_boxes(good_new, result['results'], indices)
