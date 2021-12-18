@@ -1,5 +1,5 @@
 # Open-Source Vision-Based Driver Assist for Dashcams
-![Alt Text](https://github.com/AhmadAmine998/FreeDAS/blob/master/readme/obsandlane.gif)
+<p align="center"> <img src='readme/obsandlane.gif' align="center" height="480px"> 
 ## Features
 
 - Object Detection and Tracking
@@ -77,4 +77,4 @@ python src\lib\SpeedEstimator.py
 ```
 You should get something similar to this:
 
-![Alt Text](https://github.com/AhmadAmine998/FreeDAS/blob/master/readme/Speedestimatorvideo.gif)
+<p align="center"> <img src='readme/Speedestimatorvideo.gif' align="center" height="480px"> 
